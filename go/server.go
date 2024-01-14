@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -22,36 +19,39 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func chatHandler(w http.ResponseWriter, r *http.Request) {
-	var req ChatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	w.Write([]byte("Hello, World!"))
 
-	// Convert the ChatRequest to JSON
-	reqJson, err := json.Marshal(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// var req ChatRequest
 
-	// Send a POST request to the GPT4All model
-	resp, err := http.Post("http://localhost:4891/v1/chat/completions", "application/json", bytes.NewBuffer(reqJson))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
+	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// // Convert the ChatRequest to JSON
+	// reqJson, err := json.Marshal(req)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
-	// Write the response body to the ResponseWriter
-	w.Write(body)
+	// // Send a POST request to the GPT4All model
+	// resp, err := http.Post("http://localhost:4891/v1/chat/completions", "application/json", bytes.NewBuffer(reqJson))
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer resp.Body.Close()
+
+	// // Read the response body
+	// body, err := ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// // Write the response body to the ResponseWriter
+	// w.Write(body)
 }
 
 func main() {
