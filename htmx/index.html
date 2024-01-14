@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Chat</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your external CSS file -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+
+<div class="container">
+    <form class="chat-form" hx-swap="innerHTML" hx-target="#response" hx-target-5*="#server-error" hx-target-404="#not-found">
+        <label for="message">Message:</label>
+        <textarea name="message" id="message" cols="30" rows="4" placeholder="Type your message here..."></textarea>
+        <button type="submit" hx-trigger="click" hx-post="/chat" hx-swap="innerHTML" hx-target="#response">Send</button>
+    </form>
+    <div id="response" class="chat-response"></div>
+</div>
+
+</body>
+</html>
