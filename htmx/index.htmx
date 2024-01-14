@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    </head>
+    <body>
+        <form hx-post="/chat" hx-trigger="click" hx-swap="innerHTML" hx-target="#response">
+            <label for="message">Message:</label><br>
+            <textarea name="message" id="message" cols="30" rows="4"></textarea><br><br>
+            <input type="submit" value="Send">
+        </form>
+        <div id="response"></div>
+    </body>
+</html>
