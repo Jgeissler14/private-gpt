@@ -24,7 +24,6 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Decode the form data into the ChatRequest struct
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Write([]byte("Error parsing request"))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -34,7 +33,6 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	// Convert the payload to JSON
 	reqJSON, err := json.Marshal(req) // Marshal the entire ChatRequest struct
 	if err != nil {
-		w.Write([]byte("Error converting request to JSON"))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +48,6 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	// Send a POST request to the OpenAI API
 	reqOpenAI, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(reqJSON))
 	if err != nil {
-		w.Write([]byte("Error creating request"))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -62,7 +59,6 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	client := http.Client{}
 	resp, err := client.Do(reqOpenAI)
 	if err != nil {
-		w.Write([]byte("Error sending request"))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -75,8 +71,22 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse the response body
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Role    string `json:"role"`
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Write the OpenAI response body to the ResponseWriter
-	w.Write(body)
+	w.Write([]byte(response.Choices[0].Message.Content))
 }
 
 func main() {
