@@ -4,19 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Chat</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your external CSS file -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
+        .left-sidebar {
+            width: 20%;
+            background-color: #000000; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .chat-history {
+            margin-bottom: 20px;
+            height: 60%;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .btn {
+            width: 'auto';
+            padding: 10px;
+            background-color: #93D500;
+            color: #000000;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #68b631;
+        }
+
+        .account-icon {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .account-icon img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .right-content {
+            width: 80%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            background-color: #333333;
+            box-shadow: 0 0 10px rgba(1, 46, 14, 0.1);
+            height: 100%;
+        }
+
+        .chat-form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #bdc3c7;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            resize: none;
+            color: #34495e;
+            background-color: #ecf0f1;
+        }
+
+        button {
+            background-color: #2ecc71;
+            color: #ecf0f1;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+    </style>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+
 </head>
 <body>
+ 
 
-<div class="container">
-    <form class="chat-form" hx-swap="innerHTML" hx-target="#response" hx-target-5*="#server-error" hx-target-404="#not-found">
-        <label for="message">Message:</label>
-        <textarea name="message" id="message" cols="30" rows="4" placeholder="Type your message here..."></textarea>
-        <button type="submit" hx-trigger="click" hx-post="/chat" hx-swap="innerHTML" hx-target="#response">Send</button>
-    </form>
-    <div id="response" class="chat-response"></div>
-</div>
-
-</body>
-</html>
+    <div class="container">
+        <div class="left-sidebar">
+            <div class="chat-history">
+                <!-- Display chat histories here -->
+                <div class="chat-item">User 1: Hello</div>
+                <div class="chat-item">User 2: Hi there</div>
+                <!-- Add more chat items as needed -->
+            </div>
+            <div class="btn" hx-get="/new-chat" hx-swap="innerHTML" hx-target="#response">New Chat</div>
+            <div class="account-icon">
+                <!-- Display account icon or user details here -->
+                <img src="user-icon.png" alt="User Icon">
+            </div>
+        </div>
+    
+        <div class="right-content">
+                <label for="message">Message:</label>
+                <textarea name="message" id="message" cols="30" rows="4" placeholder="Type your message here..."></textarea>
+            <button class='btn' type="button" hx-trigger="click" hx-post="/chat" hx-swap="innerHTML" hx-target="#response" hx-header="{ 'Content-Type': 'application/json' }"  hx-ext="json-enc"  hx-vals='js:{ "messages": [{ "role": "user", "content": document.getElementById("message").value }] }'>
+                    Send
+                </button> 
+            <div id="response" class="chat-response"></div>
+        </div>
+    </div>
+    
+    </body>
+    </html>
+    

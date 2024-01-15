@@ -1,8 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 type ChatMessage struct {
@@ -11,47 +15,68 @@ type ChatMessage struct {
 }
 
 type ChatRequest struct {
-	Messages []ChatMessage `json:"messages"`
-}
-
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "pong!")
+	Model    string        `json:"model"`    // Add model field to the request
+	Messages []ChatMessage `json:"messages"` // Fix the struct tag for Messages field
 }
 
 func chatHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World!"))
+	var req ChatRequest
 
-	// var req ChatRequest
+	// Decode the form data into the ChatRequest struct
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.Write([]byte("Error parsing request"))
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
+	req.Model = "gpt-3.5-turbo"
 
-	// // Convert the ChatRequest to JSON
-	// reqJson, err := json.Marshal(req)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	// Convert the payload to JSON
+	reqJSON, err := json.Marshal(req) // Marshal the entire ChatRequest struct
+	if err != nil {
+		w.Write([]byte("Error converting request to JSON"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// // Send a POST request to the GPT4All model
-	// resp, err := http.Post("http://localhost:4891/v1/chat/completions", "application/json", bytes.NewBuffer(reqJson))
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer resp.Body.Close()
+	apiKey := os.Getenv("open_ai_token")
+	if apiKey == "" {
+		http.Error(w, "OpenAI API key not found", http.StatusInternalServerError)
+		return
+	}
 
-	// // Read the response body
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	apiURL := "https://api.openai.com/v1/chat/completions"
 
-	// // Write the response body to the ResponseWriter
-	// w.Write(body)
+	// Send a POST request to the OpenAI API
+	reqOpenAI, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(reqJSON))
+	if err != nil {
+		w.Write([]byte("Error creating request"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	reqOpenAI.Header.Set("Content-Type", "application/json")
+	reqOpenAI.Header.Set("Authorization", "Bearer "+apiKey)
+	reqOpenAI.Header.Set("Content-Length", strconv.Itoa(len(reqJSON))) // Set the Content-Length header
+
+	client := http.Client{}
+	resp, err := client.Do(reqOpenAI)
+	if err != nil {
+		w.Write([]byte("Error sending request"))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Write the OpenAI response body to the ResponseWriter
+	w.Write(body)
 }
 
 func main() {
